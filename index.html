@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>버튼별 음악 재생</title>
+    <style>
+        /* 버튼 스타일 */
+        button {
+            font-size: 24px; /* 글자 크기 3배로 키움 */
+            padding: 20px 40px; /* 버튼 안쪽 여백 */
+            margin: 10px auto; /* 각 버튼 사이 간격을 10px로 설정하고, 가운데 정렬 */
+            cursor: pointer;
+            background-color: #4CAF50; /* 버튼 배경색 */
+            color: white; /* 글자색 */
+            border: none;
+            border-radius: 10px; /* 둥근 모서리 */
+            width: 400px; /* 버튼 폭을 400px로 설정 */
+            text-align: center; /* 텍스트 가운데 정렬 */
+            display: block; /* 버튼을 블록 요소로 만들어 중앙에 정렬되도록 설정 */
+        }
+
+        button:hover {
+            background-color: #45a049; /* 마우스를 올렸을 때 색 변화 */
+        }
+
+        /* 게이지 바 스타일 */
+        #progressContainer {
+            width: 100%;
+            background-color: #ddd;
+            height: 10px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        #progressBar {
+            width: 0;
+            height: 100%;
+            background-color: #4caf50;
+            border-radius: 5px;
+        }
+
+        /* 제목 스타일 */
+        h1 {
+            text-align: center;
+        }
+
+        /* 재생 상태 표시 */
+        #timeDisplay {
+            text-align: center;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>음악 선택</h1>
+
+    <!-- 하나의 버튼만 남김 -->
+    <button id="song1">004_바이탈</button>
+    <button id="stop">정지</button> <!-- 정지 버튼 유지 -->
+
+    <!-- 재생 상태 표시 -->
+    <p id="timeDisplay">재생 상태: 0초 / 0초</p>
+
+    <!-- 진행 상태 게이지 바 -->
+    <div id="progressContainer">
+        <div id="progressBar"></div>
+    </div>
+
+    <!-- 오디오 요소 -->
+    <audio id="audioPlayer" preload="auto"></audio>
+
+    <script>
+        // 각 버튼과 오디오 요소 선택
+        const song1Button = document.getElementById('song1');
+        const stopButton = document.getElementById('stop');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const timeDisplay = document.getElementById('timeDisplay');
+        const progressBar = document.getElementById('progressBar');
+        const progressContainer = document.getElementById('progressContainer');
+
+        // 현재 재생 중인 노래
+        let currentSong = null;
+
+        // 버튼 클릭 시 해당 노래 재생 또는 재개
+        song1Button.addEventListener('click', () => {
+            togglePlay('004_바이탈 25분_2차(1.2배 느리게).mp3');
+        });
+
+        // 음악 정지 버튼 클릭 이벤트
+        stopButton.addEventListener('click', () => {
+            audioPlayer.pause(); // 음악 정지
+            timeDisplay.textContent = `재생 상태: ${Math.floor(audioPlayer.currentTime)}초 / ${Math.floor(audioPlayer.duration)}초`;
+        });
+
+        // 노래 재생 또는 일시정지 함수
+        function togglePlay(songFile) {
+            if (currentSong === songFile) {
+                // 같은 노래라면 상태에 따라 재생/일시정지
+                if (audioPlayer.paused) {
+                    audioPlayer.play(); // 재개
+                } else {
+                    audioPlayer.pause(); // 일시정지
+                }
+            } else {
+                // 다른 노래라면 새로 재생
+                currentSong = songFile;
+                audioPlayer.src = songFile;
+                audioPlayer.play();
+            }
+        }
+
+        // 재생 시간 업데이트
+        audioPlayer.addEventListener('timeupdate', () => {
+            const currentTime = Math.floor(audioPlayer.currentTime); // 현재 재생 시간 (초)
+            const duration = Math.floor(audioPlayer.duration); // 전체 재생 시간 (초)
+
+            if (!isNaN(duration)) { // duration이 유효할 때만 업데이트
+                timeDisplay.textContent = `재생 상태: ${currentTime}초 / ${duration}초`;
+
+                // 진행 상태 게이지 바 업데이트
+                const progressPercent = (currentTime / duration) * 100;
+                progressBar.style.width = `${progressPercent}%`;
+            } else {
+                timeDisplay.textContent = `재생 상태: ${currentTime}초 / 로딩 중...`;
+            }
+        });
+
+        // 게이지 바 클릭 시 음악 재생 위치 변경
+        progressContainer.addEventListener('click', (e) => {
+            const containerWidth = progressContainer.offsetWidth; // 컨테이너 너비
+            const clickX = e.offsetX; // 클릭한 위치
+            const duration = audioPlayer.duration; // 전체 재생 시간
+
+            if (!isNaN(duration)) {
+                const newTime = (clickX / containerWidth) * duration;
+                audioPlayer.currentTime = newTime; // 재생 위치 변경
+            }
+        });
+    </script>
+
+</body>
+</html>
